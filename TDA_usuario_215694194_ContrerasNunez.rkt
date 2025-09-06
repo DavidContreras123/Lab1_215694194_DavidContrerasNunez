@@ -1,6 +1,6 @@
 #lang racket
 
-(provide crear-usuario usuario-suspendido? obtener-deuda)
+(provide crear-usuario usuario-suspendido? obtener-deuda get-usuario-id)
 
 ;----- CONSTRUCTOR -----
 ; Descripción: Constructor TDA usuario
@@ -25,3 +25,6 @@
 ; Recursión: No aplica
 (define(obtener-deuda usuario)
   (list-ref usuario 2))
+
+(define(get-usuario-id usuario)
+  (list-ref usuario 0))
