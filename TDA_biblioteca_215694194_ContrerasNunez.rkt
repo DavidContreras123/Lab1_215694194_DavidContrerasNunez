@@ -14,7 +14,15 @@
   (list libros usuarios prestamos max-libros dias-max
                           tasa-multa limite-deuda dias-retraso fecha-inicial))
 
+;----- PERTENENCIAS -----
 
+(define (libro-disponible? biblioteca id-libro)
+  (if (string=?(cadr(filter (lambda (x) (eq? (first x) id-libro))
+                            (get-libros biblioteca))) "disponible")
+      #t
+       #f))
+                                                                   
+  
 
 ;----- GETTERS-----
 
@@ -113,7 +121,7 @@
 ; Dominio: biblioteca (Biblioteca) 
 ; Recorrido: string (fecha-inicial)
 
-(define (get-fecha-inicial biblioteca)
+(define (get-fecha biblioteca)
   (list-ref biblioteca 8))
 
 
@@ -131,7 +139,7 @@
            (get-prestamos biblioteca) (get-max-libros biblioteca)
            (get-dias-max biblioteca) (get-tasa-multa biblioteca)
            (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
-           (get-fecha-inicial biblioteca))
+           (get-fecha biblioteca))
      (if(= (get-libro-id (car(get-libros biblioteca))) (get-libro-id libro))
         biblioteca
         (list(cons(car(get-libros biblioteca))
@@ -140,12 +148,12 @@
                                  (get-prestamos biblioteca) (get-max-libros biblioteca)
                                  (get-dias-max biblioteca) (get-tasa-multa biblioteca)
                                  (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
-                                 (get-fecha-inicial biblioteca)) libro))
+                                 (get-fecha biblioteca)) libro))
              (get-usuarios biblioteca)
              (get-prestamos biblioteca) (get-max-libros biblioteca)
              (get-dias-max biblioteca) (get-tasa-multa biblioteca)
              (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
-             (get-fecha-inicial biblioteca)))))
+             (get-fecha biblioteca)))))
 
 
 
@@ -160,7 +168,7 @@
           (get-prestamos biblioteca) (get-max-libros biblioteca)
           (get-dias-max biblioteca) (get-tasa-multa biblioteca)
           (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
-          (get-fecha-inicial biblioteca))
+          (get-fecha biblioteca))
      (if(= (get-usuario-id (car(get-usuarios biblioteca))) (get-usuario-id usuario))
         biblioteca
         (list (get-libros biblioteca)
@@ -170,12 +178,12 @@
                                         (get-prestamos biblioteca) (get-max-libros biblioteca)
                                         (get-dias-max biblioteca) (get-tasa-multa biblioteca)
                                         (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
-                                        (get-fecha-inicial biblioteca)) usuario)))
+                                        (get-fecha biblioteca)) usuario)))
               
               (get-prestamos biblioteca) (get-max-libros biblioteca)
               (get-dias-max biblioteca) (get-tasa-multa biblioteca)
               (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
-              (get-fecha-inicial biblioteca)))))
+              (get-fecha biblioteca)))))
 
 
 

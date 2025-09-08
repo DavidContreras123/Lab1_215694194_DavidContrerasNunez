@@ -28,3 +28,6 @@
 
 (define(get-usuario-id usuario)
   (list-ref usuario 0))
+
+(define(get-usuario-libros usuario)
+  (list-ref usuario 3))
