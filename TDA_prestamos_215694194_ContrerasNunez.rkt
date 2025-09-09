@@ -1,6 +1,6 @@
 #lang racket
 
-(provide crear-prestamo)
+(provide crear-prestamo get-fecha-prestamo get-dias-solicitados obtener-fecha-vencimiento calcular-dias-retraso)
 
 (define (crear-prestamo id id-usuario id-libro fecha-prestamo dias-solicitados)
   (list id id-usuario id-libro fecha-prestamo dias-solicitados))
@@ -53,6 +53,18 @@
        (obtener-fecha-aux (string-append(number->string(+ (string->number(car (regexp-split #rx"/" fecha))) 1)) "/" (cadr (regexp-split #rx"/" fecha))) (- dias 1)))])
 
   (obtener-fecha-aux (get-fecha-prestamo prestamo) (get-dias-solicitados prestamo)))
-       
+
+
+(define (calcular-dias-retraso fecha-ven fecha-actual)
+  (if(> (string->number(car (regexp-split #rx"/" fecha-actual))) (string->number(car (regexp-split #rx"/" fecha-ven))))
+     0
+     (- (string->number(car (regexp-split #rx"/" fecha-ven))) (string->number(car (regexp-split #rx"/" fecha-actual))))))
+
+(define (calcular-multa prestamo fecha-actual tasa)
+  (if(> (calcular-dias-retraso (obtener-fecha-vencimiento prestamo) fecha-actual) 0)
+     (* (calcular-dias-retraso (obtener-fecha-vencimiento prestamo) fecha-actual) tasa)
+     0))
+
+
                   
 

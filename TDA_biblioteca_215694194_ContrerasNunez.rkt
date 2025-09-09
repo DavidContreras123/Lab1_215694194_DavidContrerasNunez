@@ -17,11 +17,10 @@
 ;----- PERTENENCIAS -----
 
 (define (libro-disponible? biblioteca id-libro)
-  (if (string=?(cadr(filter (lambda (x) (eq? (first x) id-libro))
-                            (get-libros biblioteca))) "disponible")
-      #t
-       #f))
-                                                                   
+  (string=?(cadr(filter (lambda (x) (eq? (first x) id-libro))
+                            (get-libros biblioteca))) "disponible"))
+
+                                                                         
   
 
 ;----- GETTERS-----
@@ -186,6 +185,25 @@
               (get-fecha biblioteca)))))
 
 
+;(define (prestar-libro biblioteca id-libro)
+ ; (if (null? (get-libros biblioteca))
+  ;    (list
+  
+
+;(define (tomar-prestamo biblioteca id-usuario id-libro dias fecha-actual)
+ ; [cond
+  ;  ((not (libro-disponible? biblioteca id-libro))
+   ;  biblioteca)
+    ;(((usuario-suspendido? (obtener-usuario biblioteca id-usuario)))
+     ;biblioteca)
+    ;((> (cantidad-libros (obtener-usuario biblioteca id-usuario)) (get-max-libros biblioteca))
+     ;biblioteca)
+    ;((> dias (get-dias-max))
+    ; biblioteca)
+    ;((> (obtener-deuda (obtener-usuario biblioteca id-usuario)) (get-limite-deuda))
+     ;biblioteca)
+    ;((else
+      
 
 
 
