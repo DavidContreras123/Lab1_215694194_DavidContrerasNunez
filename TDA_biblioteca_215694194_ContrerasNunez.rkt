@@ -1,6 +1,8 @@
 #lang racket
+
 (require "TDA_libro_215694194_ContrerasNunez.rkt" "TDA_prestamos_215694194_ContrerasNunez.rkt"
          "TDA_usuario_215694194_ContrerasNunez.rkt")
+
 ;----- CONSTRUCTOR -----
 ; Descripción: Constructor TDA biblioteca 
 ; Dominio: libros (Lista Libro) X usuarios (Lista Usuario) X prestamos (Lista Prestamo) X
@@ -17,13 +19,12 @@
 ;----- PERTENENCIAS -----
 
 (define (libro-disponible? biblioteca id-libro)
-  (string=?(cadr(filter (lambda (x) (eq? (first x) id-libro))
-                            (get-libros biblioteca))) "disponible"))
+  (string=? (list-ref (buscar-libro biblioteca "id" id-libro) 1) "disponible"))
 
                                                                          
   
 
-;----- GETTERS-----
+;----- SELECTORES -----
 
 
 ; Descripción: Busca usuario por ID
@@ -32,10 +33,10 @@
 ; Recursión: No aplica
 
 (define (obtener-usuario biblioteca id)
-  (if (null? (filter (lambda (x) (eq? (first x) id))
-               (cadr biblioteca))) null
-      (car (filter (lambda (x) (eq? (first x) id))
-               (cadr biblioteca)))))
+  (if (null? (filter (lambda (x) (= (car x) id))
+               (get-usuarios biblioteca))) null
+  (car(filter (lambda (x) (= (first x) id))
+               (get-usuarios biblioteca)))))
 
 ; Descripción: Busca libro por ID, autor o titulo
 ; Dominio: biblioteca (Biblioteca) X criterio (string) X valor (string/int)
@@ -124,7 +125,7 @@
   (list-ref biblioteca 8))
 
 
-;----- SETTERS-----
+;----- MODIFICADORES -----
 
 
 ; Descripción: Agrega un libro a la biblioteca siempre y cuando el id no exista
@@ -141,18 +142,23 @@
            (get-fecha biblioteca))
      (if(= (get-libro-id (car(get-libros biblioteca))) (get-libro-id libro))
         biblioteca
+        ; Se crea una lista con el par conformado por el primer libro y
+        ; el resto de la biblioteca con el primer elemento obtenido por el llamado
+        ; recursivo (lista de libros)
         (list(cons(car(get-libros biblioteca))
-                  (agregar-libro (list (cdr (get-libros biblioteca))
+                  (car(agregar-libro (list (cdr (get-libros biblioteca))
                                  (get-usuarios biblioteca)
                                  (get-prestamos biblioteca) (get-max-libros biblioteca)
                                  (get-dias-max biblioteca) (get-tasa-multa biblioteca)
                                  (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
-                                 (get-fecha biblioteca)) libro))
-             (get-usuarios biblioteca)
-             (get-prestamos biblioteca) (get-max-libros biblioteca)
-             (get-dias-max biblioteca) (get-tasa-multa biblioteca)
-             (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
-             (get-fecha biblioteca)))))
+                                 (get-fecha biblioteca)) libro)))
+         ; Se reconstruye el resto de la biblioteca
+        (get-usuarios biblioteca)
+        (get-prestamos biblioteca) (get-max-libros biblioteca)
+        (get-dias-max biblioteca) (get-tasa-multa biblioteca)
+        (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
+        (get-fecha biblioteca)))))
+ 
 
 
 
@@ -179,33 +185,60 @@
                                         (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
                                         (get-fecha biblioteca)) usuario)))
               
+            
               (get-prestamos biblioteca) (get-max-libros biblioteca)
               (get-dias-max biblioteca) (get-tasa-multa biblioteca)
               (get-limite-deuda biblioteca) (get-dias-retraso biblioteca)
               (get-fecha biblioteca)))))
+    
 
 
-;(define (prestar-libro biblioteca id-libro)
- ; (if (null? (get-libros biblioteca))
-  ;    (list
+; Descripción: Actualiza la biblioteca a la hora de tomar un prestamo
+; Dominio: biblioteca (Biblioteca) X usuario-mod (Usuario) X libro-mod (Libro) X dias (int) fecha-actual (string)
+; Recorrido: Biblioteca
+; Recursión: No aplica
+
+(define (actualizar-biblioteca biblioteca usuario-mod libro-mod dias fecha-actual)
+  (list
+   (map (lambda (x)
+          (if(= (get-libro-id x) (get-libro-id libro-mod))
+             libro-mod
+             x)) (get-libros biblioteca))
+   (map (lambda (x)
+          (if(= (get-usuario-id x) (get-usuario-id usuario-mod))
+             usuario-mod
+             x)) (get-usuarios biblioteca))
+
+   (cons (crear-prestamo (nueva-id-prestamo biblioteca) (get-usuario-id usuario-mod) (get-libro-id libro-mod)
+                   fecha-actual dias) (get-prestamos biblioteca))
+   (get-max-libros biblioteca) (get-dias-max biblioteca) (get-tasa-multa biblioteca)
+   (get-limite-deuda biblioteca) (get-dias-retraso biblioteca) (get-fecha biblioteca)))
+   
   
 
-;(define (tomar-prestamo biblioteca id-usuario id-libro dias fecha-actual)
- ; [cond
-  ;  ((not (libro-disponible? biblioteca id-libro))
-   ;  biblioteca)
-    ;(((usuario-suspendido? (obtener-usuario biblioteca id-usuario)))
-     ;biblioteca)
-    ;((> (cantidad-libros (obtener-usuario biblioteca id-usuario)) (get-max-libros biblioteca))
-     ;biblioteca)
-    ;((> dias (get-dias-max))
-    ; biblioteca)
-    ;((> (obtener-deuda (obtener-usuario biblioteca id-usuario)) (get-limite-deuda))
-     ;biblioteca)
-    ;((else
-      
+; Descripción: Toma un prestamo 
+; Dominio: biblioteca (Biblioteca) X id-usuario (int) X id-libro (int) X dias (int) fecha-actual (string)
+; Recorrido: Biblioteca
+; Recursión: No aplica
 
+(define (tomar-prestamo biblioteca id-usuario id-libro dias fecha-actual)
+  [cond
+    ((and(libro-disponible? biblioteca id-libro) (not(usuario-suspendido? (obtener-usuario biblioteca id-usuario)))
+         (< (get-usuario-libros (obtener-usuario biblioteca id-usuario)) (get-max-libros biblioteca))
+         (<= dias (get-dias-max biblioteca)) (<= (obtener-deuda (obtener-usuario biblioteca id-usuario)) (get-limite-deuda biblioteca)))
+     (actualizar-biblioteca biblioteca (agregar-libro-usuario (obtener-usuario biblioteca id-usuario))
+                             (prestar-libro (buscar-libro biblioteca "id" id-libro)) dias fecha-actual))
+    (else  biblioteca)])
+                             
 
+;----- OTROS -----
+
+(define(nueva-id-prestamo biblioteca)
+  (define (nueva-id-aux prestamos contador)
+    (if(null? prestamos)
+       contador
+       (nueva-id-aux (cdr prestamos) (+ contador 1))))
+  (nueva-id-aux (get-prestamos biblioteca) 0))
 
 
 

@@ -1,6 +1,7 @@
 #lang racket
 
-(provide crear-prestamo get-fecha-prestamo get-dias-solicitados obtener-fecha-vencimiento calcular-dias-retraso)
+(provide crear-prestamo get-fecha-prestamo get-dias-solicitados obtener-fecha-vencimiento calcular-dias-retraso
+         calcular-multa)
 
 (define (crear-prestamo id id-usuario id-libro fecha-prestamo dias-solicitados)
   (list id id-usuario id-libro fecha-prestamo dias-solicitados))
