@@ -1,14 +1,42 @@
 #lang racket
 
-(provide crear-prestamo get-fecha-prestamo get-dias-solicitados obtener-fecha-vencimiento calcular-dias-retraso
-         calcular-multa)
+(provide crear-prestamo get-prestamo-id get-usuarioId-prestamo get-libroId-prestamo get-fecha-prestamo get-dias-solicitados
+         obtener-fecha-vencimiento calcular-dias-retraso calcular-multa get-estado)
+
+;----- CONSTRUCTOR -----
+
+; Descripción: Crea el TDA prestamo
+; Dominio: id (int) X id-usuario (int) X id-libro (int) X fecha-prestamo (string X dias-solicitados (int)
+; Recorrido: list
+; Recursión: No aplica
 
 (define (crear-prestamo id id-usuario id-libro fecha-prestamo dias-solicitados)
-  (list id id-usuario id-libro fecha-prestamo dias-solicitados))
+  (list id id-usuario id-libro fecha-prestamo dias-solicitados "activo"))
 
 
-;----- GETTERS -----
+;----- SELECTORES -----
 
+; Descripción: Obtiene el id del prestamo
+; Dominio: prestamo (Prestamo)
+; Recorrido: int
+
+(define (get-prestamo-id prestamo)
+  (list-ref prestamo 0))
+
+; Descripción: Obtiene el id del usuario dentro del prestamo
+; Dominio: prestamo (Prestamo)
+; Recorrido: int
+
+(define (get-usuarioId-prestamo prestamo)
+  (list-ref prestamo 1))
+
+; Descripción: Obtiene el id del libro dentro del prestamo
+; Dominio: prestamo (Prestamo)
+; Recorrido: int
+
+(define (get-libroId-prestamo prestamo)
+  (list-ref prestamo 2))
+                      
 
 ; Descripción: Obtiene la fecha del prestamo
 ; Dominio: prestamo (Prestamo)
@@ -23,6 +51,11 @@
 
 (define (get-dias-solicitados prestamo)
   (list-ref prestamo 4))
+
+(define (get-estado prestamo)
+  (list-ref prestamo 5))
+
+;----- OTROS -----
 
 ; Descripción: Calcula fecha de vencimiento sumando días solicitados a fecha de prestamo
 ; Dominio: prestamo (Prestamo)
@@ -55,11 +88,22 @@
 
   (obtener-fecha-aux (get-fecha-prestamo prestamo) (get-dias-solicitados prestamo)))
 
+; Descripción: Calcula los dias de retraso
+; Dominio: fecha-ven (string) fecha-actual (string)
+; Recorrido: int
+; Recursión: No aplica
 
 (define (calcular-dias-retraso fecha-ven fecha-actual)
-  (if(> (string->number(car (regexp-split #rx"/" fecha-actual))) (string->number(car (regexp-split #rx"/" fecha-ven))))
-     0
-     (- (string->number(car (regexp-split #rx"/" fecha-ven))) (string->number(car (regexp-split #rx"/" fecha-actual))))))
+  (if(> (string->number(cadr (regexp-split #rx"/" fecha-actual))) (string->number(cadr (regexp-split #rx"/" fecha-ven))))
+     (- (string->number(car (regexp-split #rx"/" fecha-actual))) (string->number(car (regexp-split #rx"/" fecha-ven))))     
+     (if (> (string->number(car (regexp-split #rx"/" fecha-actual))) (string->number(car (regexp-split #rx"/" fecha-ven))))
+            (- (string->number(car (regexp-split #rx"/" fecha-actual))) (string->number(car (regexp-split #rx"/" fecha-ven))))
+            0)))
+     
+; Descripción: Calcula la multa
+; Dominio: prestamo (Prestamo) fecha-ven (string) tasa (int)
+; Recorrido: int
+; Recursión: No aplica         
 
 (define (calcular-multa prestamo fecha-actual tasa)
   (if(> (calcular-dias-retraso (obtener-fecha-vencimiento prestamo) fecha-actual) 0)

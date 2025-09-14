@@ -229,7 +229,47 @@
      (actualizar-biblioteca biblioteca (agregar-libro-usuario (obtener-usuario biblioteca id-usuario))
                              (prestar-libro (buscar-libro biblioteca "id" id-libro)) dias fecha-actual))
     (else  biblioteca)])
-                             
+
+
+; Descripción: Toma un prestamo 
+; Dominio: biblioteca (Biblioteca) X id-usuario (int) X id-libro (int) X fecha-actual (string)
+; Recorrido: Biblioteca
+; Recursión: No aplica
+
+(define (devolver-libro biblioteca id-usuario id-libro fecha-actual)
+  (list
+   (map (lambda (x)
+          (if (= id-libro (get-libro-id x))
+              (list id-libro "disponible"
+                    (get-titulo x) (get-autor x))
+              x)) (get-libros biblioteca))
+   (map (lambda (x)
+          (if (= id-usuario (get-usuario-id x))
+              (if(> (+ (calcular-multa (car(filter (lambda (x) (= (third x) id-libro)) (get-prestamos biblioteca)))
+                                    fecha-actual (get-tasa-multa biblioteca)) (obtener-deuda x)) (get-limite-deuda biblioteca))
+                 (list (get-usuario-id x) (get-nombre x)
+                       (+ (obtener-deuda x) (calcular-multa (car(filter (lambda (x) (= (third x) id-libro)) (get-prestamos biblioteca)))
+                                                            fecha-actual (get-tasa-multa biblioteca)))
+                       (- (get-usuario-libros x) 1)
+                       "suspendido")
+                 (list (get-usuario-id x) (get-nombre x)
+                       (+ (obtener-deuda x) (calcular-multa (car(filter (lambda (x) (= (third x) id-libro)) (get-prestamos biblioteca)))
+                                                            fecha-actual (get-tasa-multa biblioteca)))
+                       (- (get-usuario-libros x) 1)
+                       "activo"))
+              x)) (get-usuarios biblioteca))
+   (map (lambda (x)
+          (if (= id-usuario (get-usuarioId-prestamo x))
+              (list (get-prestamo-id x) (get-usuarioId-prestamo x)
+                    (get-libroId-prestamo x) (get-fecha-prestamo x)
+                    (get-dias-solicitados x) "expirado")
+              x)) (get-prestamos biblioteca))
+   
+   (get-max-libros biblioteca) (get-dias-max biblioteca) (get-tasa-multa biblioteca)
+   (get-limite-deuda biblioteca) (get-dias-retraso biblioteca) (get-fecha biblioteca)))
+              
+   
+
 
 ;----- OTROS -----
 

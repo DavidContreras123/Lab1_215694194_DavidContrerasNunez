@@ -20,24 +20,41 @@
   (string=? (list-ref usuario 4) "suspendido"))
      
 ;----- SELECTORES -----
+
 ; Descripción: Obtiene la deuda del usuario
 ; Dominio: usuario
-; Recorrido: int (deuda)
-; Recursión: No aplica
+; Recorrido: int 
+
 (define(obtener-deuda usuario)
   (list-ref usuario 2))
+
+; Descripción: Obtiene el id del usuario
+; Dominio: usuario (Usuario)
+; Recorrido: int 
 
 (define(get-usuario-id usuario)
   (list-ref usuario 0))
 
+; Descripción: Obtiene el nombre del usuario
+; Dominio: usuario (Usuario)
+; Recorrido: string 
+
 (define(get-nombre usuario)
   (list-ref usuario 1))
+
+; Descripción: Obtiene la cantidad de libros del usuario
+; Dominio: usuario (Usuario)
+; Recorrido: int 
 
 (define(get-usuario-libros usuario)
   (list-ref usuario 3))
 
 
 ;----- MODIFICADORES -----
+
+; Descripción: Suma uno a la cantidad de libros del usuario
+; Dominio: usuario (Usuario)
+; Recorrido: list
 
 (define(agregar-libro-usuario usuario)
   (list (get-usuario-id usuario) (get-nombre usuario)
