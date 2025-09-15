@@ -21,7 +21,20 @@
 (define (libro-disponible? biblioteca id-libro)
   (string=? (list-ref (buscar-libro biblioteca "id" id-libro) 1) "disponible"))
 
-                                                                         
+; Descripción: Verifica si el usuario debe suspenderse
+; Dominio: biblioteca (Biblioteca) X id-usuario (int) X fecha-actual (string)
+; Recorrido: bool
+; Recursión: Cola
+
+(define (debe-suspenderse? biblioteca id-usuario fecha-actual)
+  (define (suspender-aux prestamo)
+    (if (null? prestamo)
+        #f
+        (if (or ( > (obtener-deuda (obtener-usuario biblioteca id-usuario) (get-limite-deuda biblioteca))
+                (calcular-dias-retraso (obtener-fecha-vencimiento  (car prestamo)) fecha-actual)))
+            #t
+            (suspender-aux (cdr prestamo))))) 
+  (suspender-aux (car(filter (lambda (x) (= (third x) id-usuario)) (get-prestamos biblioteca)))))
   
 
 ;----- SELECTORES -----
@@ -268,8 +281,23 @@
    (get-max-libros biblioteca) (get-dias-max biblioteca) (get-tasa-multa biblioteca)
    (get-limite-deuda biblioteca) (get-dias-retraso biblioteca) (get-fecha biblioteca)))
               
-   
 
+; Descripción: Suspende al usuario
+; Dominio: biblioteca (Biblioteca) X id-usuario (int) 
+; Recorrido: Biblioteca
+; Recursión: No aplica
+
+(define (suspender-usuario biblioteca id-usuario) 
+  (list (get-libros biblioteca)
+        (map (lambda (x)
+               (if (= id-usuario (get-usuario-id x))
+                   (list
+                    (get-usuario-id x) (get-nombre x)
+                   (obtener-deuda x) (get-usuario-libros x)
+                   "suspendido")
+                   x))(get-usuarios biblioteca))
+        (get-prestamos biblioteca)  (get-max-libros biblioteca) (get-dias-max biblioteca) (get-tasa-multa biblioteca)
+   (get-limite-deuda biblioteca) (get-dias-retraso biblioteca) (get-fecha biblioteca)))
 
 ;----- OTROS -----
 
@@ -282,6 +310,7 @@
 
 
 
+      
 
 
 
