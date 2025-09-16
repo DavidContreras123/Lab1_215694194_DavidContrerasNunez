@@ -39,18 +39,7 @@
 
 ;----- SELECTORES -----
 
-; Descripción: Busca prestamo por ID
-; Dominio: biblioteca (Biblioteca) X id-prestamo (int)
-; Recorrido: prestamo
-; Recursión: No aplica
 
-(define (obtener-prestamo biblioteca  id-prestamo)
-   (if (null? (filter (lambda (x) (= (car x) id-prestamo))
-                      (get-prestamos biblioteca)))
-       null
-       (car(filter (lambda (x) (= (car x) id-prestamo))
-                   (get-prestamos biblioteca)))))
-  
 ; Descripción: Busca usuario por ID
 ; Dominio: biblioteca (Biblioteca) X id (int)
 ; Recorrido: Usuario o null
@@ -200,9 +189,6 @@
           (get-fecha biblioteca))
      (if(= (get-usuario-id (car(get-usuarios biblioteca))) (get-usuario-id usuario))
         biblioteca
-        ; Se crea una lista con los libros primero y despues se usa un par con el primer
-        ;; usuario con el resto de la lista de usuarios del llamado recursivo 
-        ; Despues del llamado se termina de construir la biblioteca
         (list (get-libros biblioteca)
               (cons(car(get-usuarios biblioteca))
                    (get-usuarios (registrar-usuario
@@ -312,41 +298,6 @@
                    x))(get-usuarios biblioteca))
         (get-prestamos biblioteca)  (get-max-libros biblioteca) (get-dias-max biblioteca) (get-tasa-multa biblioteca)
    (get-limite-deuda biblioteca) (get-dias-retraso biblioteca) (get-fecha biblioteca)))
-
-
-; Descripción: Renueva el prestamo
-; Dominio: biblioteca (Biblioteca) X id-prestamo (int) X dias-extra (int) X fecha-actual (string)
-; Recorrido: Biblioteca
-; Recursión: No aplica  
-
-(define (renovar-prestamo biblioteca)
-  (lambda (id-prestamo)
-    (lambda (dias-extra)
-      (lambda (fecha-actual)
-        ; Se verifica que se cumplan las condiciones para renovar el prestamo
-        [cond
-          ((and (not (null?(obtener-prestamo biblioteca id-prestamo)))
-                (string=? (get-estado (obtener-prestamo biblioteca id-prestamo)) "activo")
-                (not (usuario-suspendido? (obtener-usuario biblioteca (get-usuarioId-prestamo (obtener-prestamo biblioteca id-prestamo)))))
-                (= (calcular-dias-retraso (obtener-fecha-vencimiento (obtener-prestamo biblioteca id-prestamo)) fecha-actual) 0) 
-                (<= (+ dias-extra (get-dias-solicitados (obtener-prestamo biblioteca id-prestamo))) (get-dias-max biblioteca)))
-           (list
-            (get-libros biblioteca) (get-usuarios biblioteca)
-            (map (lambda (x)
-                   ; Verifica si tienen el mismo id
-                   (if (= id-prestamo (get-prestamo-id x))
-                       ; Se crea un prestamo actualizando los dias solicitados
-                       (list  (get-prestamo-id x) (get-usuarioId-prestamo x)
-                              (get-libroId-prestamo x) (get-fecha-prestamo x)
-                              (+ dias-extra (get-dias-solicitados x)) (get-estado x))
-                       ; Deja el prestamo como estaba y sigue buscando
-                       x)) (get-prestamos biblioteca))
-            ; Se construye la parte faltante de la biblioteca
-             (get-max-libros biblioteca) (get-dias-max biblioteca) (get-tasa-multa biblioteca)
-             (get-limite-deuda biblioteca) (get-dias-retraso biblioteca) (get-fecha biblioteca)))
-          (else biblioteca)]))))
-                
-                
 
 ;----- OTROS -----
 
