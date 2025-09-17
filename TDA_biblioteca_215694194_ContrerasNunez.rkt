@@ -30,12 +30,25 @@
   (define (suspender-aux prestamo)
     (if (null? prestamo)
         #f
-        (if (or ( > (obtener-deuda (obtener-usuario biblioteca id-usuario) (get-limite-deuda biblioteca))
-                (calcular-dias-retraso (obtener-fecha-vencimiento  (car prestamo)) fecha-actual)))
-            #t
+        (if (or ( > (obtener-deuda (obtener-usuario biblioteca id-usuario)) (get-limite-deuda biblioteca))
+                (calcular-dias-retraso (obtener-fecha-vencimiento  (car prestamo)) fecha-actual))
+            #t  
             (suspender-aux (cdr prestamo))))) 
-  (suspender-aux (car(filter (lambda (x) (= (third x) id-usuario)) (get-prestamos biblioteca)))))
-  
+  (suspender-aux (filter (lambda (x) (= (cadr x) id-usuario)) (get-prestamos biblioteca))))
+
+; Descripción: Busca prestamo por ID
+; Dominio: biblioteca (Biblioteca) X id-usuario (int) X fecha-actual (string)
+; Recorrido: bool
+; Recursión: Cola
+
+(define (tiene-atrasos? prestamos id-usuario fecha-actual)
+  (if (null? prestamos)
+      #f
+      (if (and (= (get-usuarioId-prestamo (car prestamos)) id-usuario) 
+               (> (calcular-dias-retraso (obtener-fecha-vencimiento (car prestamos)) fecha-actual) 0))
+               #t
+               (tiene-atrasos? (cdr prestamos) id-usuario fecha-actual)))) 
+
 
 ;----- SELECTORES -----
 
@@ -258,7 +271,7 @@
     (else  biblioteca)])
 
 
-; Descripción: Toma un prestamo 
+; Descripción: Devuelve un libro
 ; Dominio: biblioteca (Biblioteca) X id-usuario (int) X id-libro (int) X fecha-actual (string)
 ; Recorrido: Biblioteca
 ; Recursión: No aplica
@@ -283,7 +296,7 @@
                        (+ (obtener-deuda x) (calcular-multa (car(filter (lambda (x) (= (third x) id-libro)) (get-prestamos biblioteca)))
                                                             fecha-actual (get-tasa-multa biblioteca)))
                        (- (get-usuario-libros x) 1)
-                       "activo"))
+                       (get-estado-usuario x)))
               x)) (get-usuarios biblioteca))
    (map (lambda (x)
           (if (= id-usuario (get-usuarioId-prestamo x))
@@ -328,7 +341,8 @@
           ((and (not (null?(obtener-prestamo biblioteca id-prestamo)))
                 (string=? (get-estado (obtener-prestamo biblioteca id-prestamo)) "activo")
                 (not (usuario-suspendido? (obtener-usuario biblioteca (get-usuarioId-prestamo (obtener-prestamo biblioteca id-prestamo)))))
-                (= (calcular-dias-retraso (obtener-fecha-vencimiento (obtener-prestamo biblioteca id-prestamo)) fecha-actual) 0) 
+                (eq? (tiene-atrasos? (obtener-prestamo biblioteca id-prestamo) (get-usuarioId-prestamo (obtener-prestamo biblioteca id-prestamo))
+                                   fecha-actual) #f)
                 (<= (+ dias-extra (get-dias-solicitados (obtener-prestamo biblioteca id-prestamo))) (get-dias-max biblioteca)))
            (list
             (get-libros biblioteca) (get-usuarios biblioteca)
@@ -345,8 +359,29 @@
              (get-max-libros biblioteca) (get-dias-max biblioteca) (get-tasa-multa biblioteca)
              (get-limite-deuda biblioteca) (get-dias-retraso biblioteca) (get-fecha biblioteca)))
           (else biblioteca)]))))
-                
-                
+
+
+; Descripción: Paga la deuda del usuario
+; Dominio: biblioteca (Biblioteca) X id-usuario (int) X monto (int)
+; Recorrido: Biblioteca
+; Recursión: No aplica
+
+(define (pagar-deuda biblioteca id-usuario monto)
+  (list
+   (get-libros biblioteca)
+   (map (lambda (x)
+        (if (= id-usuario (get-usuario-id x))
+            (if (and (= (- monto (obtener-deuda x)) 0) (eq? (tiene-atrasos? (filter (lambda (x)
+                                                                                      (= (cadr x) id-usuario))(get-prestamos biblioteca))
+                                                                            id-usuario (get-fecha biblioteca)) #f))
+                (list (get-usuario-id x) (get-nombre x) (- monto (obtener-deuda x))
+                      (get-usuario-libros x) "activo")
+
+                (list (get-usuario-id x) (get-nombre x) (abs(- monto (obtener-deuda x)))
+                      (get-usuario-libros x) "suspendido"))
+            x)) (get-usuarios biblioteca))
+   (get-prestamos biblioteca) (get-max-libros biblioteca) (get-dias-max biblioteca) (get-tasa-multa biblioteca)
+       (get-limite-deuda biblioteca) (get-dias-retraso biblioteca) (get-fecha biblioteca)))
 
 ;----- OTROS -----
 

@@ -1,7 +1,7 @@
 #lang racket
 
 (provide crear-usuario usuario-suspendido? obtener-deuda get-usuario-id
-         get-nombre get-usuario-libros agregar-libro-usuario)
+         get-nombre get-usuario-libros get-estado-usuario agregar-libro-usuario)
 
 ;----- CONSTRUCTOR -----
 ; Descripción: Constructor TDA usuario
@@ -49,6 +49,8 @@
 (define(get-usuario-libros usuario)
   (list-ref usuario 3))
 
+(define (get-estado-usuario usuario)
+  (list-ref usuario 4))
 
 ;----- MODIFICADORES -----
 
